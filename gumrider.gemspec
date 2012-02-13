@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = "gumrider"
-  s.version = "0.1.0"
+  s.version = "0.1.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Vadim Demedes"]
@@ -23,7 +23,7 @@ Gem::Specification.new do |s|
     "Rakefile",
     "Readme.md",
     "VERSION",
-    "gumroad.gemspec",
+    "gumrider.gemspec",
     "lib/gumrider.rb",
     "test/helper.rb",
     "test/test_gumrider.rb"
