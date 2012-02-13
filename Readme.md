@@ -10,7 +10,7 @@ gem install gumrider
 
 # Usage
 
-```
+```ruby
 require 'gumrider'
 
 client = Gumrider.new 'YOUR EMAIL', 'YOUR PASSWORD'
