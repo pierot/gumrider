@@ -15,6 +15,8 @@ require 'gumrider'
 
 client = Gumrider.new 'YOUR EMAIL', 'YOUR PASSWORD'
 
+client.authenticate
+
 # Creating new link
 link = client.link # like a factory method, returns Gumrider::Link instance
 link.name = 'My cool PSD'
@@ -26,6 +28,7 @@ link.save
 
 link = client.link(link.id) # where link.id is the unique identifier
 link.name # is 'My cool PSD'
+link.short_url # is 'http://gumroad.com/l/YOUR_ID'
 
 # Listing links
 
