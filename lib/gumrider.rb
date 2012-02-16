@@ -41,6 +41,7 @@ class Gumrider
         link.description = item["description"]
         link.id = item["id"]
         link.currency = item["currency"]
+
         links.push link
       end
 
@@ -67,6 +68,8 @@ class Gumrider
           @price = response["link"]["price"] / 100
           @description = response["link"]["description"]
           @currency = response["link"]["currency"]
+          @short_url = response["link"]["short_url"]
+
           @id = id
         end
       end
