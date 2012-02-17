@@ -3,7 +3,8 @@ require 'crack'
 require 'base64'
 
 class Gumrider
-  
+ 
+  # bind to getter / setter and check
   attr_accessor :endpoint, :token
    
   def initialize(email, password)
