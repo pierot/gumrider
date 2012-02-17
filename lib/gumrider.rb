@@ -17,8 +17,6 @@ class Gumrider
       :email => @email, 
       :password => @password 
     })
-
-    p response
     
     if response["success"]
       @token = Base64.encode64(response["token"] + ":")
