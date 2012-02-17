@@ -17,6 +17,7 @@ class Gumrider
     
     if response["success"]
       @token = Base64.encode64(response["token"] + ":")
+
       true
     else
       false
