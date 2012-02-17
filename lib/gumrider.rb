@@ -13,10 +13,11 @@ class Gumrider
   end
   
   def authenticate
-    response = Crack::JSON.parse(Http.post "#{@endpoint}/sessions", :form => { 
+    response = Http.post "#{@endpoint}/sessions", :form => { 
       :email => @email, 
       :password => @password 
-    })
+    }
+    response = Crack::JSON.parse(response) unless response.is_a?(Hash)
     
     if response["success"]
       @token = Base64.encode64(response["token"] + ":")
@@ -32,7 +33,8 @@ class Gumrider
   end
   
   def links
-    response = Crack::JSON.parse(Http.with(:Authorization => 'Basic ' + @token).get "#{@endpoint}/links")
+    response = Http.with(:Authorization => 'Basic ' + @token).get "#{@endpoint}/links"
+    response = Crack::JSON.parse(response) unless response.is_a?(Hash)
 
     if response["success"]
       links = []
@@ -64,7 +66,8 @@ class Gumrider
       @endpoint = endpoint
 
       if id
-        response = Crack::JSON.parse(Http.with(:Authorization => 'Basic ' + token).get "#{endpoint}/links/#{id}")
+        response = Http.with(:Authorization => 'Basic ' + token).get "#{endpoint}/links/#{id}"
+        response = Crack::JSON.parse(response) unless response.is_a?(Hash)
 
         if response["success"]
           @name = response["link"]["name"]
@@ -88,7 +91,8 @@ class Gumrider
     end
     
     def delete
-      response = Crack::JSON.parse(Http.with(:Authorization => 'Basic ' + @token).delete "#{@endpoint}/links/#{@id}")
+      response = Http.with(:Authorization => 'Basic ' + @token).delete "#{@endpoint}/links/#{@id}"
+      response = Crack::JSON.parse(response) unless response.is_a?(Hash)
 
       !!response["success"]
     end
@@ -96,13 +100,14 @@ class Gumrider
     private
     
     def create
-      response = Crack::JSON.parse(Http.with(:Authorization => 'Basic ' + @token).post "#{@endpoint}/links", :form => {
+      response = Http.with(:Authorization => 'Basic ' + @token).post "#{@endpoint}/links", :form => {
         :name => @name,
         :url => @url,
         :description => @description,
         :price => @price * 100,
         :currency => @currency
-      })
+      }
+      response = Crack::JSON.parse(response) unless response.is_a?(Hash)
       
       if response["success"]
         @id = response["link"]["id"]
@@ -115,13 +120,14 @@ class Gumrider
     end
     
     def update
-      response = Crack::JSON.parse(Http.with(:Authorization => 'Basic ' + @token).put "#{@endpoint}/links/#{@id}", :form => {
+      response = Http.with(:Authorization => 'Basic ' + @token).put "#{@endpoint}/links/#{@id}", :form => {
         :name => @name,
         :url => @url,
         :description => @description,
         :price => @price * 100,
         :currency => @currency
-      })
+      }
+      response = Crack::JSON.parse(response) unless response.is_a?(Hash)
 
       !!response["success"]
     end
