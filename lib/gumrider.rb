@@ -84,11 +84,17 @@ class Gumrider
     end
     
     def save
-      if @id
-        update
-      else
-        create
+      begin
+        if @id
+          return update
+        else
+          return create
+        end
+      rescue Psych::SyntaxError => e
+        return false
       end
+
+      return false
     end
     
     def delete
