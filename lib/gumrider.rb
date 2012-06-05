@@ -1,47 +1,59 @@
-require 'http'
-require 'crack'
-require 'base64'
+require 'httparty'
 
 class Gumrider
- 
+  include HTTParty
+
+  base_uri 'https://gumroad.com/api/v1'
+  # ssl_ca_file = '/usr/lib/ssl/certs/ca-certificates.crt'
+
   # bind to getter / setter and check
-  attr_accessor :endpoint, :token
+  attr_accessor :token, :ssl_ca_file
    
   def initialize(email, password)
     @email = email
     @password = password
-    @endpoint = 'https://gumroad.com/api/v1'
   end
   
   def authenticate
-    response = Http.post "#{@endpoint}/sessions", :form => { 
-      :email => @email, 
-      :password => @password 
-    }
-    response = Crack::JSON.parse(response) unless response.is_a?(Hash)
+    response = post '/sessions', { email: @email, password: @password }
     
-    if response["success"]
-      @token = Base64.encode64(response["token"] + ":")
+    if response['token']
+      self.class.basic_auth response['token'], ''
 
-      true
+      @token = response['token']
     else
       false
     end
   end
+
+  def post(path, params)
+    self.class.post path, query: params, ssl_ca_file: @ssl_ca_file
+  end
+
+  def get(path)
+    self.class.get path, ssl_ca_file: @ssl_ca_file
+  end
+
+  def delete(path)
+    self.class.delete path, ssl_ca_file: @ssl_ca_file
+  end
+
+  def put(path, params)
+    self.class.put path, query: params, ssl_ca_file: @ssl_ca_file
+  end
   
   def link(id = false)
-    Gumrider::Link.new id, @token, @endpoint
+    Gumrider::Link.new id, self
   end
   
   def links
-    response = Http.with(:Authorization => 'Basic ' + @token).get "#{@endpoint}/links"
-    response = Crack::JSON.parse(response) unless response.is_a?(Hash)
+    response = get "/links"
 
     if response["success"]
       links = []
 
       response["links"].each do |item|
-        link = Gumrider::Link.new(false, @token, @endpoint)
+        link = Gumrider::Link.new false, self
         link.name = item["name"]
         link.url = item["url"]
         link.price = item["price"] / 100
@@ -60,15 +72,13 @@ class Gumrider
   
   class Link
     
-    attr_accessor :endpoint, :token, :id, :name, :price, :description, :url, :currency, :short_url
+    attr_accessor :gumrider, :id, :name, :price, :description, :url, :currency, :short_url
     
-    def initialize(id, token, endpoint)
-      @token = token
-      @endpoint = endpoint
+    def initialize(id, gumrider)
+      @gumrider = gumrider
 
       if id
-        response = Http.with(:Authorization => 'Basic ' + token).get "#{endpoint}/links/#{id}"
-        response = Crack::JSON.parse(response) unless response.is_a?(Hash)
+        response = @gumrider.get "/links/#{id}"
 
         if response["success"]
           @name = response["link"]["name"]
@@ -98,8 +108,7 @@ class Gumrider
     end
     
     def delete
-      response = Http.with(:Authorization => 'Basic ' + @token).delete "#{@endpoint}/links/#{@id}"
-      response = Crack::JSON.parse(response) unless response.is_a?(Hash)
+      response = @gumrider.delete "/links/#{@id}"
 
       !!response["success"]
     end
@@ -107,14 +116,13 @@ class Gumrider
     private
     
     def create
-      response = Http.with(:Authorization => 'Basic ' + @token).post "#{@endpoint}/links", :form => {
-        :name => @name,
-        :url => @url,
-        :description => @description,
-        :price => @price * 100,
-        :currency => @currency
+      response = @gumrider.post "/links", {
+        name: @name,
+        url: @url,
+        description: @description,
+        price: @price * 100,
+        currency: @currency
       }
-      response = Crack::JSON.parse(response) unless response.is_a?(Hash)
       
       if response["success"]
         @id = response["link"]["id"]
@@ -127,14 +135,13 @@ class Gumrider
     end
     
     def update
-      response = Http.with(:Authorization => 'Basic ' + @token).put "#{@endpoint}/links/#{@id}", :form => {
-        :name => @name,
-        :url => @url,
-        :description => @description,
-        :price => @price * 100,
-        :currency => @currency
+      response = @gumrider.put "/links/#{@id}", {
+        name: @name,
+        url: @url,
+        description: @description,
+        price: @price * 100,
+        currency: @currency
       }
-      response = Crack::JSON.parse(response) unless response.is_a?(Hash)
 
       !!response["success"]
     end
